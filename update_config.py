@@ -32,11 +32,12 @@ def main(rank_value, path_config_json):
         schedular = config['lr_scheduler'][:5]
         optimizer = config['optimizer']
         epochs = config['epoch']
-        lr = f"{config['learning_rate']:.1e}"
+        lr = f"{config['learning_rate']:.1e}".replace("e-0", "e-").replace("e+0", "e+")
+
         
         
         # We will dynamically replace "conv20,al20" with the new value.
-        new_filename = f"locon,d{newtwork_dim},al{network_alpha},epo{epochs},{schedular},{optimizer},{lr}"
+        new_filename = f"locon,d{newtwork_dim},al{network_alpha},conv{rank_value},conval{rank_value},epo{epochs},{schedular},{optimizer},{lr}"
         
         config['output_name'] = new_filename
 
@@ -45,11 +46,11 @@ def main(rank_value, path_config_json):
         output_parent_dir = os.path.dirname(config['output_dir'])
         output_dir = os.path.join(output_parent_dir, new_filename)
         
-        new_logging_dir = os.path.join(output_path, "log")
+        new_logging_dir = os.path.join(output_dir, "log")
         config['logging_dir'] = new_logging_dir
         
         # Create a new file name for the updated config
-        new_config_path = os.path.join(output_dir, new_config_name)
+        new_config_path = os.path.join(output_dir, f"{new_filename}.json")
 
         # Ensure the new output and logging directories exist
         os.makedirs(output_dir, exist_ok=True)

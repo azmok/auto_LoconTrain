@@ -10,12 +10,14 @@
 
 # --- Configuration ---
 # Your base JSON config file from the kohya_ss GUI
-PATH_CONFIG_JSON="_baseConfig.json"
+PATH_CONFIG_JSON="./_baseConfig.json"
 PATH_CONFIG_TOML=""
 # The path to the update script
 PATH_UPDATE_SCRIPT="./update_config.py"
 # The path to the main training script
-PATH_TRAIN_NETWORK="kohya_ss/sd-scripts/sdxl_train_network.py"
+PATH_TRAIN_NETWORK="/home/index0815/bmal_kohya_ss/sd-scripts/sdxl_train_network.py"
+PATH_VENV="/home/index0815/bmal_kohya_ss/.venv/bin/activate"
+
 # The total number of training runs you want to perform
 NUM_RUNS=3
 
@@ -41,17 +43,19 @@ do
     # Step 1: Call the Python script to update the JSON config
     # The output of the Python script (the new file path) is captured by `new_config_path`
     new_config_path=$(python3 "$PATH_UPDATE_SCRIPT" "$current_rank" "$PATH_CONFIG_JSON")
-    
+
     if [ -z "$new_config_path" ]; then
         echo "Failed to create new config file. Aborting."
         exit 1
     fi
     echo "Generated new config file: $new_config_path"
     
-    # Step 2: Launch the training using the newly created config file
-    # We pass the new config file path to the --config_file argument.
-    accelerate launch --config_file="$new_config_path" "$PATH_TRAIN_NETWORK"
-    
+    ## activate venv
+    source $PATH_VENV
+
+    # Step 2: run the sdxl_network_train.py
+    python $PATH_TRAIN_NETWORK --config_file $new_config_path
+
     # Check the exit status of the `accelerate launch` command
     if [ $? -eq 0 ]; then
         echo "Training for rank $current_rank completed successfully."
